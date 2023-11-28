@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sample-go-trace-api
+  namespace: domain2
+  annotations:
+    iam.gke.io/gcp-service-account: sample-go-trace-api@masemfordev-gateway.iam.gserviceaccount.com

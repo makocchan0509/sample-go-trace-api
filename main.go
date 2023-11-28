@@ -177,6 +177,9 @@ func main() {
 	mux.Handle("/api/v1/sleep", http.HandlerFunc(h.sleep))
 	mux.Handle("/api/v1/chain", http.HandlerFunc(h.sleepAndCall))
 	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"status": "OK"}`))
+	}))
 
 	log.Println(Entry{
 		Severity:  "INFO",
