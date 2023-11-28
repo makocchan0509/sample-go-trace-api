@@ -1,0 +1,41 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: proto-ms-app-dev-1
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/network-interfaces: '[{"network":"fujifilm-network","subnetwork":"fujifilm-asia-northeast1"}]'
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+        autoscaling.knative.dev/maxScale: '100'
+        run.googleapis.com/startup-cpu-boost: 'true'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      serviceAccountName: 92935634485-compute@developer.gserviceaccount.com
+      containers:
+        - name: proto-ms-app-1
+          image: my-app-image
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: APP_PORT
+              value: '8080'
+            - name: APP_NAME
+              value: simple-app-dev-1
+            - name: PROJECT_ID
+              value: ca-masem-test
+            - name: ENDPOINT
+              value: http://192.168.100.2:8080/api/v1/sleep
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi

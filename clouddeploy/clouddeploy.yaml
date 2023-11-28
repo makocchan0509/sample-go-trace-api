@@ -1,0 +1,29 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: proto-ms-app-bg-pipeline
+description: "deploy pipeline for proto-ms-app-bg"
+serialPipeline:
+  stages:
+    - targetId: proto-ms-app-bg
+      strategy:
+        canary:
+          customCanaryDeployment:
+            phaseConfigs:
+              - phaseId: "canary-0"
+                percentage: 50
+                verify: false
+                profiles: [prev]
+              - phaseId: "stable"
+                percentage: 100
+                verify: false
+                profiles: [crr]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: proto-ms-app-bg
+description: Cloud Run deploy proto-ms-app-bg
+run:
+  location: projects/ca-masem-test/locations/asia-northeast1
+

@@ -1,0 +1,65 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: proto-ms-app-1
+description: "deploy pipeline for simple-app-1"
+serialPipeline:
+  stages:
+    - targetId: run-app-1-dev
+      profiles: [app-1-dev]
+    - targetId: run-app-2-dev
+      profiles: [app-2-dev]
+    - targetId: run-app-1-prd
+      profiles: [ app-1-prd ]
+    - targetId: run-app-2-prd
+      profiles: [ app-2-prd ]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: run-app-1-dev
+description: Cloud Run development environment proto-ms-app-1
+run:
+  location: projects/ca-masem-test/locations/asia-northeast1
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: run-app-2-dev
+description: Cloud Run development environment proto-ms-app-2
+run:
+  location: projects/ca-masem-test/locations/asia-northeast1
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: run-app-1-prd
+description: Cloud Run production environment proto-ms-app-1
+requireApproval: true
+run:
+  location: projects/ca-masem-test/locations/asia-northeast1
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: run-app-2-prd
+description: Cloud Run production environment proto-ms-app-2
+run:
+  location: projects/ca-masem-test/locations/asia-northeast1
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Automation
+metadata:
+  name: proto-ms-app-1/promote
+description: Promote Automation
+serviceAccount: 92935634485-compute@developer.gserviceaccount.com
+selector:
+- target:
+    id: run-app-1-dev
+- target:
+    id: run-app-1-prd
+rules:
+- promoteRelease:
+    name: "promote"
+    wait: "1m"
+    destinationTargetId: "@next"

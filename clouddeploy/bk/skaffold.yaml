@@ -1,0 +1,23 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: cloud-run-app
+profiles:
+  - name: app-1-dev
+    manifests:
+      rawYaml:
+        - app-1-dev.yaml
+  - name: app-2-dev
+    manifests:
+      rawYaml:
+        - app-2-dev.yaml
+  - name: app-1-prd
+    manifests:
+      rawYaml:
+        - app-1-prd.yaml
+  - name: app-2-prd
+    manifests:
+      rawYaml:
+        - app-2-prd.yaml
+deploy:
+  cloudrun: {}
