@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sample-go-trace-api-1
+  namespace: domain1
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - frontend-gateway
+  http:
+    - route:
+        - destination:
+            host: sample-go-trace-api-1-v1
+            port:
+              number: 8080

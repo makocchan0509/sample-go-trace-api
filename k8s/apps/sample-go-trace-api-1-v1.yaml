@@ -28,14 +28,14 @@ spec:
             path: /
             port: http
           initialDelaySeconds: 10
-          periodSeconds: 10
+          periodSeconds: 3600
           timeoutSeconds: 20
         readinessProbe:
           httpGet:
             path: /
             port: http
           initialDelaySeconds: 10
-          periodSeconds: 10
+          periodSeconds: 3600
           timeoutSeconds: 20
         env:
           - name: PROJECT_ID
@@ -63,5 +63,6 @@ spec:
     - port: 8080
       protocol: TCP
       targetPort: 8080
+      name: http-web
   selector:
     app: sample-go-trace-api-1-v1
