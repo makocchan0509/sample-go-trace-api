@@ -1,0 +1,135 @@
+admin:
+  access_log_path: /dev/stdout
+  address:
+    socket_address: { address: 0.0.0.0, port_value: 9901 }
+
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 51051
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                access_log:
+                  - name: envoy.access_loggers.stdout
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+                generate_request_id: true
+                tracing:
+                  provider:
+                    name: envoy.tracers.opentelemetry
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.trace.v3.OpenTelemetryConfig
+                      grpc_service:
+                        envoy_grpc:
+                          cluster_name: opentelemetry_collector
+                        timeout: 5.0s
+                      service_name: front-envoy
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: service_envoyproxy_io
+                http_filters:
+                  - name: envoy.filters.http.jwt_authn
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                      providers:
+                        keycloak:
+                          issuer: http://34.98.111.211/auth/realms/consumer
+                          forward_payload_header: payload
+                          remote_jwks:
+                            http_uri:
+                              uri: "http://keycloak:8080/auth/realms/consumer/protocol/openid-connect/certs"
+                              cluster: jwks
+                              timeout: 5s
+                            cache_duration: 600s
+                      rules:
+                        - match:
+                            prefix: "/"
+                          requires:
+                            provider_name: keycloak
+                      bypass_cors_preflight: true
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      transport_api_version: V3
+                      failure_mode_allow: false
+                      grpc_service:
+                        envoy_grpc:
+                          cluster_name: opa-authz
+                      with_request_body:
+                        max_request_bytes: 8192
+                        allow_partial_message: true
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: service_envoyproxy_io
+      type: STRICT_DNS
+      dns_lookup_family: V4_ONLY
+      load_assignment:
+        cluster_name: service_envoyproxy_io
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: host.docker.internal
+                      port_value: 8090
+    - name: opa-authz
+      type: STRICT_DNS
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: opa-authz
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: opa
+                      port_value: 9191
+    - name: jwks
+      type: STRICT_DNS
+      load_assignment:
+        cluster_name: jwks
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: keycloak
+                      port_value: 8080
+    - name: opentelemetry_collector
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: opentelemetry_collector
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: otel-collector
+                      port_value: 4317

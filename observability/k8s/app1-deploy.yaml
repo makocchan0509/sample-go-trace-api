@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sample-go-trace-api-1
+  name: sample-go-trace-api-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-go-trace-api-1
+  template:
+    metadata:
+      labels:
+        app: sample-go-trace-api-1
+    spec:
+      containers:
+      - image: asia-northeast1-docker.pkg.dev/masemfordev-gateway/any-containers/sample-go-trace-api:v2.0.0
+        name: sample-go-trace-api
+        env:
+        - name: OTEL_AGENT_ENDPOINT
+          value: otel-collector:4317
+        - name: APP_NAME
+          value: app1
+        - name: APP_VERSION
+          value: v2.0.0
+        - name: PROJECT_ID
+          value: masemfordev-gateway
+        - name: APP_PORT
+          value: "8080"
+        - name: ENDPOINT
+          value: "http://app2:8080/api/v1/sleep"
+
+

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: envoy
+  name: envoy
+spec:
+  ports:
+  - port: 51051
+    protocol: TCP
+    targetPort: 51051
+    name: http
+  - port: 9901
+    protocol: TCP
+    targetPort: 9901
+    name: admin
+  selector:
+    app: envoy

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jaeger
+  name: jaeger
+spec:
+  ports:
+  - port: 16686
+    protocol: TCP
+    targetPort: 16686
+    name: http1
+  - port: 14268
+    protocol: TCP
+    targetPort: 14268
+    name: http2
+  - port: 14250
+    protocol: TCP
+    targetPort: 14250
+    name: http3
+  - port: 4317
+    protocol: TCP
+    targetPort: 4317
+    name: otlp
+  selector:
+    app: jaeger

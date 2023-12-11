@@ -1,0 +1,4 @@
+FROM jboss/keycloak:latest
+ADD --chown=jboss:root https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar /tmp/opentelemetry-javaagent.jar
+#COPY --chown=jboss:root ./keycloak/keycloak-metrics-spi/build/libs/keycloak-metrics-spi-4.0.0.jar /opt/jboss/keycloak/standalone/deployments/
+#RUN touch /opt/jboss/keycloak/standalone/deployments/keycloak-metrics-spi-4.0.0.jar.dodeploy

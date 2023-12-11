@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: sample-go-trace-api-1-v1
-  namespace: domain1
-  name: sample-go-trace-api-1-v1
+    app: sample-go-trace-api-2-v1
+  namespace: domain2
+  name: sample-go-trace-api-2-v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sample-go-trace-api-1-v1
+      app: sample-go-trace-api-2-v1
   strategy: {}
   template:
     metadata:
       labels:
-        app: sample-go-trace-api-1-v1
+        app: sample-go-trace-api-2-v1
     spec:
       serviceAccountName: sample-go-trace-api
       containers:
@@ -23,31 +23,17 @@ spec:
         ports:
         - containerPort: 8080
           name: http
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 3600
-          timeoutSeconds: 20
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 3600
-          timeoutSeconds: 20
         env:
           - name: PROJECT_ID
             value: masemfordev-gateway
           - name: APP_NAME
-            value: sample-go-trace-api-1
+            value: c2-sample-go-trace-api-2
           - name: APP_VERSION
-            value: v1
+            value: c2-v1
           - name: APP_PORT
             value: "8080"
           - name: ENDPOINT
-            value: "http://sample-go-trace-api-2-v1.domain2.svc.cluster.local:8080/api/v1/sleep"
+            value: "http://sample-go-trace-api-1-v1.domain1.svc.cluster.local:8080/api/v1/sleep"
         resources: {}
 
 ---
@@ -55,9 +41,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: sample-go-trace-api-1-v1
-  name: sample-go-trace-api-1-v1
-  namespace: domain1
+    app: sample-go-trace-api-2-v1
+  name: sample-go-trace-api-2-v1
+  namespace: domain2
 spec:
   ports:
     - port: 8080
@@ -65,4 +51,4 @@ spec:
       targetPort: 8080
       name: http-web
   selector:
-    app: sample-go-trace-api-1-v1
+    app: sample-go-trace-api-2-v1

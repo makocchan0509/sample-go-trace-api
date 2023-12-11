@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jaeger
+  name: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - image: jaegertracing/all-in-one:latest
+        name: all-in-one
+        resources: {}
+        ports:
+        - containerPort: 16686
+          name: http1
+          protocol: TCP
+        - containerPort: 14268
+          name: http2
+          protocol: TCP
+        - containerPort: 14250
+          name: http3
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp
+          protocol: TCP
+status: {}

@@ -1,0 +1,52 @@
+receivers:
+  otlp:
+    protocols:
+      grpc: # on port 4317
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'opa'
+          metrics_path: '/metrics'
+          static_configs:
+            - targets: [ 'opa:8181' ]
+              labels:
+                group: 'opa'
+        - job_name: 'envoy'
+          metrics_path: '/stats/prometheus'
+          static_configs:
+            - targets: [ 'envoy:9901' ]
+              labels:
+                group: 'envoy'
+processors:
+  batch: {}
+  resourcedetection:
+    detectors: [gcp]
+    override: false
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      label1: value1
+
+  debug:
+
+  otlp:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+  googlecloud:
+    log:
+      default_log_name: opentelemetry.io/collector-exported-log
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug,googlecloud,otlp]
+    metrics:
+      receivers: [otlp,prometheus]
+      processors: [batch]
+      exporters: [debug,prometheus]

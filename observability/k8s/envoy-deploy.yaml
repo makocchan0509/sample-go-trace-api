@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: envoy
+  name: envoy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: envoy
+    spec:
+      containers:
+      - image: envoyproxy/envoy:v1.26-latest
+        name: envoy
+        resources: {}
+        args:
+          - "-c"
+          - "/etc/envoy/envoy.yaml"
+          - "--service-cluster"
+          - "front-proxy"
+        ports:
+          - containerPort: 51051
+            name: http
+            protocol: TCP
+          - containerPort: 9901
+            name: admin
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /etc/envoy
+            name: envoy-config
+      volumes:
+        - configMap:
+            name: envoy-config
+          name: envoy-config

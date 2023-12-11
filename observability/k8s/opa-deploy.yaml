@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: opa
+  name: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+    spec:
+      containers:
+      - image: openpolicyagent/opa:latest-envoy
+        name: opa
+        args:
+          - run
+          - --server
+          - --config-file=/etc/opa/config/opa.yaml
+          - --log-level=debug
+          - /etc/opa/policy/policy.rego
+        resources:
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        ports:
+        - containerPort: 9191
+          name: opa
+        - containerPort: 8181
+          name: opa-metrics
+        volumeMounts:
+          - mountPath: /etc/opa/policy
+            name: policy
+          - mountPath: /etc/opa/config
+            name: config
+      volumes:
+        - name: policy
+          configMap:
+            name: opa-policy
+        - name: config
+          configMap:
+            name: opa

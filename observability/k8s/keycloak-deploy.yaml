@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: keycloak
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - image: asia-northeast1-docker.pkg.dev/masemfordev-gateway/any-containers/keycloak:v0.0.1
+        name: keycloak
+        resources: {}
+        env:
+          - name: KEYCLOAK_USER
+            value: admin
+          - name: KEYCLOAK_PASSWORD
+            value: admin
+          - name: KEYCLOAK_OTEL_SAMPLING_PERCENTAGE
+            value: "1.0"
+          - name: OTEL_SERVICE_NAME
+            value: keycloak
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://otel-collector:4317
+          - name: JAVA_OPTS_APPEND
+            value: "-javaagent:/tmp/opentelemetry-javaagent.jar"
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9990
+          name: management
+          protocol: TCP

@@ -1,0 +1,20 @@
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: igw-healthcheck
+  namespace: istio-ingress
+spec:
+  default:
+    checkIntervalSec: 15
+    timeoutSec: 15
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    config:
+      type: HTTP
+      httpHealthCheck:
+        port: 15021
+        requestPath: /healthz/ready
+  targetRef:
+    group: ""
+    kind: Service
+    name: istio-ingressgateway
